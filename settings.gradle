@@ -1,0 +1,6 @@
+rootProject.name = 'onboarding_services'
+include 'common'
+include 'activity-worker'
+include 'workflow-worker'
+include 'workflow-launcher'
+

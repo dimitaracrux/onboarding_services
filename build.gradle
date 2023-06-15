@@ -1,0 +1,81 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.5.3")
+    }
+}
+
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'com.crux.cadence-test'
+version = '1.0-SNAPSHOT'
+
+subprojects {
+    apply plugin: 'java'
+
+    repositories {
+        mavenCentral()
+    }
+}
+
+project('common') {
+    dependencies {
+        implementation 'com.uber.cadence:cadence-client:3.8.1'
+    }
+}
+
+project('activity-worker') {
+    apply plugin: 'application'
+    dependencies {
+        implementation project(':common')
+        implementation 'com.uber.cadence:cadence-client:3.8.1'
+    }
+    application {
+        mainClassName = 'com.crux.cadence.ActivityWorker'
+    }
+    jar {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        manifest {
+            attributes 'Main-Class': mainClassName
+        }
+        from {
+            configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+        }
+    }
+}
+
+project('workflow-worker') {
+    apply plugin: 'application'
+    dependencies {
+        implementation project(':common')
+        implementation 'com.uber.cadence:cadence-client:3.8.1'
+    }
+    application {
+        mainClassName = 'com.crux.cadence.WorkflowWorker'
+    }
+    jar {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        manifest {
+            attributes 'Main-Class': mainClassName
+        }
+        from {
+            configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+        }
+    }
+}
+
+project('workflow-launcher') {
+    apply plugin: 'org.springframework.boot'
+
+    dependencies {
+        implementation project(':common')
+        implementation 'com.uber.cadence:cadence-client:3.8.1'
+        implementation 'org.springframework.boot:spring-boot-starter'
+        implementation 'org.springframework.boot:spring-boot-starter-web:2.5.4'
+    }
+}
